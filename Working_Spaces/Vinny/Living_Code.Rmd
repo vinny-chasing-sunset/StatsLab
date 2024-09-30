@@ -2,3 +2,37 @@
 
 ```
 
+```{r}
+library(dplyr)
+library(readr)
+library(ggplot2)
+```
+
+```{r Read in dataset}
+getwd()
+
+Pec_1 <- read.csv("Data/Raw_Data/PEC-1 (1).csv")
+head(Pec_1)
+```
+
+```{r clean data set and summarize data}
+#grouped and calculated to total kWh for low consumption areas and High consumption areas.
+summary_data <-Pec_1 %>%
+  group_by(high_adopt) %>%
+  summarise(total_kwh=sum(kwh_total))
+
+str(summary_data)
+summary_data$total_kwh <- as.numeric(summary_data$total_kwh)
+```
+
+
+```{r Sumarize Energy Consumption}
+
+#created bar chart to visulaize
+ggplot(summary_data, aes(x = factor(high_adopt), y = total_kwh, fill = factor(high_adopt))) +
+  geom_bar(stat = "identity") + #"identify" is used for data when already summed
+  labs(x = "Adoption Level",  y = "Total Energy Consumption (kWh)",  title = "Energy Consumed in High vs Low adoption areas") +
+      scale_y_continuous(labels = scales::comma)+#stops scientific notation from showing on chart
+  scale_fill_manual(values= c("0" ="blue", "1" ="green"),
+                    labels = c("Low Adoption","High Adoption"))
+```

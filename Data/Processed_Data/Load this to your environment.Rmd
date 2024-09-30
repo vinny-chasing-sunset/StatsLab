@@ -1,0 +1,23 @@
+```{r}
+library(dplyr)
+library(readr)
+library(ggplot2)
+```
+
+```{r Read in dataset}
+getwd()
+
+Pec_1 <- read.csv("Data/Raw_Data/PEC-1 (1).csv")
+head(Pec_1)
+```
+
+```{r clean data set and summarize data}
+#grouped and calculated to total kWh for low consumption areas and High consumption areas.
+summary_data <-Pec_1 %>%
+  group_by(high_adopt) %>%
+  summarise(total_kwh=sum(kwh_total))
+
+str(summary_data)
+summary_data$total_kwh <- as.numeric(summary_data$total_kwh)
+```
+
