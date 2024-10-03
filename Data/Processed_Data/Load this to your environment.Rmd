@@ -16,18 +16,6 @@ head(Pec_1)
 
 
 #grouped and calculated to total kWh for low consumption areas and High consumption areas.
-summary_data <-Pec_1 %>%
-  group_by(high_adopt, year) %>%
-  summarise(total_kwh=sum(kwh_total))
-
-
-str(summary_data)
-summary_data$total_kwh <- as.numeric(summary_data$total_kwh)
-
-
-```
-
-```{r}
 is.na(Pec_1)
 
 Pec_final1<- Pec_1 %>%
@@ -38,16 +26,10 @@ Pec_final1<- Pec_1 %>%
    replace_na(total_hosp, median(total_hosp, na.rm = T))) %>%
    ungroup()
 
-Pec_final_test <- Pec_final1%>% 
-  group_by(high_adopt_imputed, year) %>% 
-  summarise(total_kwh=sum(kwh_total))
-
-Pec_final_test_2 <- Pec_final1%>% 
-  group_by(canton, year) %>% 
-  summarise(total_kwh=sum(kwh_total))
-
 Pec_final_test_2 <- Pec_final1%>% 
   group_by(canton, high_adopt_imputed, year) %>% 
   summarise(total_kwh=sum(kwh_total))
+
 ```
+
 
