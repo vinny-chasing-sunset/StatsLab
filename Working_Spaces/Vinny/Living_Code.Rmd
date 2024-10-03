@@ -10,19 +10,38 @@ getwd()
 
 Pec_1 <- read.csv("Data/Raw_Data/PEC-1 (1).csv")
 head(Pec_1)
+
 ```
+
+```{r Wrangled Data}
+is.na(Pec_1)
+
+Pec_final1<- Pec_1 %>%
+    group_by(canton) %>%
+    mutate(high_adopt_imputed = 
+   replace_na(high_adopt, median(high_adopt, na.rm = T))) %>%
+    mutate(hosp_rate_imputed = 
+   replace_na(total_hosp, median(total_hosp, na.rm = T))) %>%
+   ungroup()
+
+Pec_final_test_2 <- Pec_final1%>% 
+  group_by(canton, high_adopt_imputed, year) %>% 
+  summarise(total_kwh=sum(kwh_total))
+
+```
+
 
 >a.	Energy Consumption Levels in high adoption areas vs Energy Consumption Levels in low adoption areas (all years). 
 
-```{r clean data set and summarize data}
-#grouped and calculated to total kWh for low consumption areas and High consumption areas.
-summary_data <-Pec_1 %>%
-  group_by(high_adopt) %>%
-  group_by(year) %>%
-  summarise(total_kwh=sum(kwh_total))
+```{r}
 
-str(summary_data)
-summary_data$total_kwh <- as.numeric(summary_data$total_kwh)
+```
+
+
+```{r clean data set and summarize data}
+
+shapiro.test(Pec_final_test_2$total_kwh)
+
 ```
 
 
