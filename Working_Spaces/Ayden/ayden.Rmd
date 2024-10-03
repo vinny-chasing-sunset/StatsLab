@@ -1,0 +1,54 @@
+
+```{r}
+rm(list=ls()) #removing the objects
+
+library(moments) #package for skewness
+library(knitr) #package for making tables (kable)
+library(tidyverse) #multiple packages for data wrangling
+library(gt) # a package to make tables
+library(lubridate) # a package to manipulate dates
+library(tidyr)
+library(janitor)
+library(dplyr)
+library(ggplot2)
+library(magrittr)
+```
+
+```{r Read in dataset}
+setwd("/Users/AydenSchirmacher/Downloads")
+
+Pec_1 <- read.csv("/Users/AydenSchirmacher/Downloads/PEC-1 (1).csv")
+head(Pec_1)
+```
+
+```{r clean data set and summarize data}
+#grouped and calculated to total kWh for low consumption areas and High consumption areas.
+summary_data<-Pec_1 %>%
+  group_by(high_adopt, year) %>%
+  summarise(total_kwh=sum(kwh_total))
+
+str(summary_data)
+summary_data$total_kwh <- as.numeric(summary_data$total_kwh)
+summary_data
+```
+```{r}
+#convert to factor with labels
+summary_data_long <- summary_data %>%
+  mutate(high_adopt = factor(high_adopt, levels = c(0, 1), labels = c("Low Adoption", "High Adoption"))) 
+```
+
+
+
+```{r graph energy consumption}
+
+ggplot(summary_data_long, aes(x = year, y = total_kwh, fill = high_adopt)) +
+  geom_col(position = "dodge", alpha = 0.7) +
+  scale_fill_manual(name = "Adoption Status", values = c("Low Adoption" = "red", "High Adoption" = "blue")) +
+  labs(title = "Comparison of Energy Consumption in High and Low Adoption Areas (2015-2020)",
+       x = "Year",
+       y = "Total kWh") +
+  scale_x_continuous(breaks = seq(2015, 2020, 1))+
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for better readability
+  
+```
