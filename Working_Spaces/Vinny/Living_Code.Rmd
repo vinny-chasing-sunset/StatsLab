@@ -12,6 +12,8 @@ Pec_1 <- read.csv("Data/Raw_Data/PEC-1 (1).csv")
 head(Pec_1)
 ```
 
+>a.	Energy Consumption Levels in high adoption areas vs Energy Consumption Levels in low adoption areas (all years). 
+
 ```{r clean data set and summarize data}
 #grouped and calculated to total kWh for low consumption areas and High consumption areas.
 summary_data <-Pec_1 %>%
