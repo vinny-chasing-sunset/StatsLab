@@ -14,7 +14,6 @@ head(Pec_1)
 
 ```{r clean data set and summarize data}
 
-
 #grouped and calculated to total kWh for low consumption areas and High consumption areas.
 is.na(Pec_1)
 
@@ -29,7 +28,13 @@ Pec_final1<- Pec_1 %>%
 Pec_final_test_2 <- Pec_final1%>% 
   group_by(canton, high_adopt_imputed, year) %>% 
   summarise(total_kwh=sum(kwh_total))
+```
+
+```{r}
 
 ```
 
+```{r}
+
+```
 
