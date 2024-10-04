@@ -1,0 +1,205 @@
+```{r}
+
+```
+
+```{r}
+library(dplyr)
+library(readr)
+library(ggplot2)
+library(tidyr)
+library(moments)
+library(lubridate)
+library(kableExtra)
+```
+
+```{r}
+getwd()
+
+Pec_1 <- read.csv("Data/Raw_Data/PEC-1 (1).csv")
+head(Pec_1)
+
+```
+
+```{r clean data set by imputing values and summing by year }
+
+Pec_final1 <- Pec_1 %>%
+  group_by(canton)%>%
+  mutate(kwh_total_imputed =
+           replace_na(kwh_total, median(kwh_total, na.rm = T))) %>%
+  mutate(hosp_rate_imputed =
+           replace_na(total_hosp, median(total_hosp, na.rm = T))) %>%
+  ungroup()
+
+```
+
+```{r HR Grouping}
+#Grouping for hospital rate only
+Pec_final_hr <- Pec_final1 %>%
+  group_by(canton, high_adopt, year) %>%
+  summarise(total_hr=sum(hosp_rate_imputed))
+  
+Pec_final_hr
+```
+
+```{r kWh}
+#Grouping for kWh only
+Pec_final_kwh <- Pec_final1 %>%
+  group_by(canton, high_adopt, year) %>%
+  summarise(total_kwh=sum(kwh_total_imputed))
+  
+Pec_final_hr
+```
+
+
+```{r HR Summary Stats}
+#summary Stats of Hospital Rates
+Pec_final_hr_summ <- Pec_final_hr %>%
+  select(total_hr) %>% 
+  summarize(
+                    length.hr=length(total_hr)-sum(is.na(total_hr)),
+                    mean.total_hr=mean(total_hr),
+                    median.total_hr=median(total_hr),
+                    sd.total_hr=sd(total_hr),
+                    skew.total_hr=skewness(total_hr),
+                    )
+
+kable(Pec_final_hr_summ, caption = "Summary Statistics for Hospital Rates")
+```
+
+```{r kWh Summary Stats}
+Pec_final_kwh_summ <- Pec_final_kwh %>%
+  select(total_kwh) %>% 
+  summarize(
+                    length.kwh=length(total_kwh)-sum(is.na(total_kwh)),
+                    mean.total_kwh=mean(total_kwh),
+                    median.total_kwh=median(total_kwh),
+                    sd.total_kwh=sd(total_kwh),
+                    skew.total_kwh=skewness(total_kwh)
+                    )
+
+kable(Pec_final_kwh_summ, caption = "Summary Statistics for kWh")
+```
+
+```{r first year 2015 hr in high adoption cantons with last year 2020 hr in high adoption cantons}
+Year_hr <- Pec_final_hr %>% 
+  filter(year == 2015| year == 2020, high_adopt == 1) 
+```
+
+```{r kWh}
+#
+Year_kwh <- Pec_final_kwh %>% 
+  filter(year == 2015| year == 2020, high_adopt == 1) 
+```
+
+
+```{r}
+Year_hr_wide <- Year_hr %>% 
+  select(canton, year, total_hr) %>%
+  pivot_wider(names_from = year, values_from = total_hr)
+Year_hr_wide
+```
+
+```{r}
+Year_kwh_wide <- Year_kwh %>% 
+  select(canton, year, total_kwh) %>%
+  pivot_wider(names_from = year, values_from = total_kwh)
+Year_kwh_wide
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+names(Year_hr_wide)[3]<- paste("first year")
+names(Year_hr_wide)[4]<- paste("last year")
+
+names(Year_kwh_wide)[3]<- paste("first year")
+names(Year_kwh_wide)[4]<- paste("last year")
+
+```
+
+
+```{r HR T-Test}
+t.test(Year_hr_wide$`first year`, Year_hr_wide$`last year`, alternative = "greater", paired = T)
+```
+
+```{r kwh T-Test}
+t.test(Year_kwh_wide$`first year`, Year_kwh_wide$`last year`, alternative = "greater", paired = T)
+```
+
+
+```{r Compare first year 2015 hr in low adoption with last year hr in low adoption}
+Year_hr_0 <- Pec_final_hr %>% 
+  filter(year == 2015| year == 2020, high_adopt == 0) 
+
+Year_hr_wide_0 <- Year_hr_0 %>% 
+  select(canton, year, total_hr) %>%
+  pivot_wider(names_from = year, values_from = total_hr)
+
+names(Year_hr_wide_0)[3]<- paste("first year")
+names(Year_hr_wide_0)[4]<- paste("last year")
+
+t.test(Year_hr_wide_0$`first year`, Year_hr_wide_0$`last year`, alternative = "greater", paired = T)
+
+```
+
+> **Questions 1**:Energy Consumption Levels in high adoption areas vs Energy Consumption Levels
+in low adoption areas (include data for all years).
+
+> *Null Hypothesis*: the energy consumtion of high adoption areas and low adoption areas *are* the same.
+ *Alt Hypothesis*: The energy consumption of hight adoption areas and low adoption *are NOT* the same 
+
+```{r Enconsumption Q1}
+
+#Checking if normal distrubted. Pec_final_kwh is the wragnled data before taking the summ stats.
+
+shapiro.test(Pec_final_kwh$total_kwh)
+
+#checking for individual groups
+high_adopt_data<- Pec_final_kwh %>% 
+  filter(high_adopt==1)
+
+shapiro.test(high_adopt_data$total_kwh)
+
+#checking for individual groups, now low adopt
+low_adopt_data<- Pec_final_kwh %>% 
+  filter(high_adopt==0)
+
+shapiro.test(low_adopt_data$total_kwh)
+
+```
+> test indicates that the p value is almost zero. Null is rejected and thus not normally distrbuted.Data will need to be transformed.
+
+```{r log Tranformation}
+#perfoming log tranformation to try to rectify
+
+energy_consumption_log <-Pec_final_kwh %>%
+  mutate(log.kwh=log(total_kwh))
+####Can not get this to work. any help is appreciated.
+#energy_consumption_log_diff<-Pec_final_kwh%>%
+    #mutate(log.low.comsumption=log(total_kwh ~ high_adopt=0),    				       	
+           #log.high.comsumption=log(total_kwh ~ high_adopt=1), 
+			     #diff.in.log=log.low.comsumption-log.high.comsumption)%>%
+            #glimpse()
+
+
+t.test(log.kwh ~ high_adopt ,energy_consumption_log)
+
+
+shapiro.test(energy_consumption_log$log.kwh)
+
+
+
+```
+> In the t-test p is still relatively small and null hypothesis would be rejected. Shapiro p value is still small and W is not close to 1... this indicates that it is still not normmally distributed.
+
+```{r welches test - nonparametric}
+welch_test_result <- t.test(log.kwh ~ high_adopt, data = energy_consumption_log)
+welch_test_result
+```
+>Welches test indicates that we would reject the null hypothesis and alternative hypothesis is correct. The energy consumption of low adoption areas and high adoption areas are not the same. Welchs test indicates this as the mean of low adoption(15) areas is lower than the mean of high adoption areas(16). Their is a 95% that true mean differnce of the adoption level lies somewhere -1.2 and -0.7.
+
+

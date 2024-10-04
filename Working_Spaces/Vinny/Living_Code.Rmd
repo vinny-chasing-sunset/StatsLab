@@ -1,8 +1,17 @@
+D
+
+
+>DONT LOOk AT THIS CODE. IT IS OLD. USE "test" INSTEAD. 
+  -VINNY
+
 
 ```{r}
+
+
 library(dplyr)
 library(readr)
 library(ggplot2)
+
 ```
 
 ```{r Read in dataset}
@@ -28,6 +37,27 @@ Pec_final_test_2 <- Pec_final1%>%
   group_by(canton, high_adopt_imputed, year) %>% 
   summarise(total_kwh=sum(kwh_total))
 
+Pec_final_hr_summ <- Pec_final_hr %>%
+  select(total_hr) %>% 
+  summarize(
+                    length.hr=length(total_hr)-sum(is.na(total_hr)),
+                    mean.total_hr=mean(total_hr),
+                    median.total_hr=median(total_hr),
+                    sd.total_hr=sd(total_hr),
+                    skew.total_hr=skewness(total_hr),
+                    )
+
+Pec_final_hr_summ
+
+```
+
+```{r Summary Statisics}
+dfs
+```
+
+
+```{r paired test from jackson}
+t.test(Pec_final_test_2$high_adopt_imputed, Pec_final_test_2$total)
 ```
 
 
